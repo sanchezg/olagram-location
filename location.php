@@ -7,17 +7,8 @@ Zend_Loader::loadClass('Zend_Http_Client');
 // This function formats the output and deliver it to the browser
 function format_response($format, $api_response) {
  
-    // Define HTTP responses
-    $http_response_code = array(
-        200 => 'OK',
-        400 => 'Bad Request',
-        401 => 'Unauthorized',
-        403 => 'Forbidden',
-        404 => 'Not Found'
-    );
- 
     // Set HTTP Response
-    header('HTTP/1.1 '.$api_response['STATUS'].' '.$http_response_code[ $api_response['STATUS'] ]);
+    header('HTTP/1.1 '.$api_response['STATUS'].' OK');
 
     if ($format === 'json') {
       header('Content-Type: application/json; charset=utf-8'); // HTTP json response content type
@@ -77,6 +68,19 @@ try {
   	$result = json_decode($req_response->getBody());
   
   	$data_pack['STATUS'] = $result->meta->code;
+
+    if($data_pack['STATUS'] != 200) {
+      $http_response_code = array(
+        200 => 'OK',
+        400 => 'Bad Request',
+        401 => 'Unauthorized',
+        403 => 'Forbidden',
+        404 => 'Not Found'
+      );
+      echo 'STATUS '.$data_pack['STATUS'].': '.$http_response_code[$data_pack['STATUS']];
+      exit();
+    }
+
     $data_pack['id'] = $image;
 
     if ((!is_null($result->data->location))) {
