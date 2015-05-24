@@ -7,7 +7,7 @@ Zend_Loader::loadClass('Zend_Http_Client');
 // This function formats the output and deliver it to the browser
 function format_response($format, $api_response) {
  
-    // Set HTTP Response
+    // Set HTTP response
     header('HTTP/1.1 '.$api_response['STATUS'].' OK');
 
     if ($format === 'json') {
@@ -30,6 +30,8 @@ function format_response($format, $api_response) {
                       "\t"."\t".'</geopoint>'."\n";
         if (isset($api_response['location']['place']))
           $response .= "\t".'<place>'.$api_response['location']['place'].'</place>'."\n";
+        if (isset($api_response['location']['address']))
+          $response .= "\t".'<address>'.$api_response['location']['address'].'</address>'."\n";
         $response .= "\t".'</location>'."\n".
                       '</response>';
       }
@@ -37,6 +39,21 @@ function format_response($format, $api_response) {
     }
 
     echo $response;
+}
+
+function do_reverse_geo($latitude, $longitude) {
+  $maps_client = new Zend_Http_Client('https://maps.googleapis.com/maps/api/geocode/json');
+  $param = $latitude .',' . $longitude;
+  $maps_client->setParameterGet('latlng', $param);
+
+  try {
+    $req_response = $maps_client->request();
+    return json_decode($req_response->getBody()) ;
+  } catch (Exception $e) {
+    echo 'ERROR: ' . $e->getMessage() . print_r($client);
+    retun -1;
+  }
+
 }
 
 // Look if a media id was specified
@@ -72,10 +89,10 @@ try {
     if($data_pack['STATUS'] != 200) {
       $http_response_code = array(
         200 => 'OK',
-        400 => 'Bad Request',
+        400 => 'Bad request',
         401 => 'Unauthorized',
         403 => 'Forbidden',
-        404 => 'Not Found'
+        404 => 'Not found'
       );
       echo 'STATUS '.$data_pack['STATUS'].': '.$http_response_code[$data_pack['STATUS']];
       exit();
@@ -92,6 +109,11 @@ try {
       if((!is_null($result->data->location->name))) {
         $data_pack['location']['place'] = $result->data->location->name;
       }
+      $reverse_location = do_reverse_geo($result->data->location->latitude, $result->data->location->longitude);
+      if ($reverse_location !== -1)
+        if ($reverse_location->status === 'OK') {
+          $data_pack['location']['address'] = $reverse_location->results[0]->formatted_address;
+        }
     }
     else
       $data_pack['location'] = 0; 
