@@ -4,7 +4,7 @@ require_once __DIR__.'/vendor/autoload.php';
 
 // start a silex app
 $app = new Silex\Application();
-$app['debug'] = false;
+$app['debug'] = true;
 
 // my instagram consume key
 $instagram_client_id = '7e1d9eb5f97c4f89a170e43ce6fff285';
@@ -40,10 +40,21 @@ $app->get('/media/{media_id}', function ($media_id) use ($instagram_client_id) {
     // join with media id and instagram api token
     $api_url = 'https://api.instagram.com/v1/media/' . $media_id;
     
-    $api_response = $client->get(
-        $api_url,
-        ['query' => ['client_id' => $instagram_client_id]]
-    );
+    try {
+        $api_response = $client->get(
+            $api_url,
+            ['query' => ['client_id' => $instagram_client_id]]
+        );
+    } catch (Exception $e) {
+        return "Error, you should not push that button :(";
+    }
+    
+
+    //first, check if the response was succesful
+    if ($api_response->getStatusCode() != "200") {
+        echo "Error in response";
+        return;
+    }       
 
     // obtain response (only the body)
     $result = json_decode($api_response->getBody());
