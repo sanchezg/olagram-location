@@ -10,7 +10,8 @@ $app['debug'] = true;
 $instagram_client_id = '7e1d9eb5f97c4f89a170e43ce6fff285';
 
 // this function performs a reverse geocoding using google maps API
-function do_reverse_geo($latitude, $longitude) {
+function do_reverse_geo($latitude, $longitude)
+{
     // open a new http client
     $maps_client = new GuzzleHttp\Client();
 
@@ -35,7 +36,7 @@ $app->get('/', function () {
 // media directory route
 $app->get('/media/{media_id}', function ($media_id) use ($instagram_client_id) {
     // open a new http client
-    $client = new GuzzleHttp\Client(); 
+    $client = new GuzzleHttp\Client();
 
     // join with media id and instagram api token
     $api_url = 'https://api.instagram.com/v1/media/' . $media_id;
@@ -54,7 +55,7 @@ $app->get('/media/{media_id}', function ($media_id) use ($instagram_client_id) {
     if ($api_response->getStatusCode() != "200") {
         echo "Error in response";
         return;
-    }       
+    }
 
     // obtain response (only the body)
     $result = json_decode($api_response->getBody());
@@ -80,7 +81,7 @@ $app->get('/media/{media_id}', function ($media_id) use ($instagram_client_id) {
 
     // see media location info
     if ((!is_null($result->data->location))) {
-        if ((!is_null($result->data->location->latitude)) and 
+        if ((!is_null($result->data->location->latitude)) and
             (!is_null($result->data->location->longitude))) {
             $data_pack['location']['geopoint']['latitude'] = $result->data->location->latitude;
             $data_pack['location']['geopoint']['longitude'] = $result->data->location->longitude;
@@ -95,17 +96,17 @@ $app->get('/media/{media_id}', function ($media_id) use ($instagram_client_id) {
             $result->data->location->latitude,
             $result->data->location->longitude
             );
-        if ($reverse_location !== -1)
+        if ($reverse_location !== -1) {
             if ($reverse_location->status === 'OK') {
                 $data_pack['location']['address'] = $reverse_location->results[0]->formatted_address;
             }
-    }
-    else
+        }
+    } else {
         $data_pack['location'] = 0;
+    }
 
     // return data assembled
     return json_encode($data_pack);
 });
 
 $app->run();
-?>
