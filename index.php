@@ -7,7 +7,7 @@ $app = new Silex\Application();
 $app['debug'] = true;
 
 // my instagram consume key
-$instagram_client_id = '7e1d9eb5f97c4f89a170e43ce6fff285';
+$instagram_client_id = 'CONSUMER_KEY';
 
 // this function performs a reverse geocoding using google maps API
 function do_reverse_geo($latitude, $longitude)
